@@ -11,6 +11,7 @@ const errorHandler = require('./middleware/errorHandler');
 
 const rootRouter = require('./routes/root');
 const registerRouter = require('./routes/register');
+const logOutRouter = require('./routes/logout');
 const authRouter = require('./routes/auth');
 const refreshTokenRouter = require('./routes/refreshToken');
 const employeesRouter = require('./routes/employees');
@@ -39,6 +40,7 @@ app.use('/', rootRouter);
 //API Routes
 app.use('/api/v1/register', registerRouter);
 app.use('/api/v1/login', authRouter);
+app.use('/api/v1/logout', logOutRouter);
 app.use('/api/v1/refresh', refreshTokenRouter);
 
 app.use(verifyJWT);

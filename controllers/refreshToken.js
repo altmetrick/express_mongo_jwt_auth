@@ -1,5 +1,3 @@
-const path = require('path');
-const fsPromises = require('fs').promises;
 const jwt = require('jsonwebtoken');
 
 const usersDB = {

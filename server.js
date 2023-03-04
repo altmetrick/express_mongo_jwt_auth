@@ -4,6 +4,7 @@ const path = require('path');
 const cors = require('cors');
 
 const { logger } = require('./middleware/logEvents');
+const verifyJWT = require('./middleware/verifyJWT');
 const corsOptions = require('./config/corsOptions');
 const errorHandler = require('./middleware/errorHandler');
 
@@ -35,6 +36,8 @@ app.use('/', rootRouter);
 //API Routes
 app.use('/api/v1/register', registerRouter);
 app.use('/api/v1/login', authRouter);
+
+app.use(verifyJWT);
 app.use('/api/v1/employees', employeesRouter);
 
 //404 Not found

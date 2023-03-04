@@ -61,11 +61,14 @@ const handleLogin = async (req, res) => {
     );
 
     //Sending tokens
+    //as we use cookie parser, now we have ability to add cookie on res
+    //set secure: false while development
+    // secure : true - will be sent only on https, and local host is just http, so it won't work
     res.cookie('jwt', refreshToken, {
       httpOnly: true,
       maxAge: 24 * 60 * 60 * 1000,
       sameSite: 'None',
-      secure: true,
+      secure: false,
     });
 
     res.json({ message: `${userName} is logged in`, accessToken });

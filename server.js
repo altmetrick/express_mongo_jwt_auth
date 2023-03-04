@@ -2,6 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const path = require('path');
 const cors = require('cors');
+const cookieParser = require('cookie-parser');
 
 const { logger } = require('./middleware/logEvents');
 const verifyJWT = require('./middleware/verifyJWT');
@@ -11,6 +12,7 @@ const errorHandler = require('./middleware/errorHandler');
 const rootRouter = require('./routes/root');
 const registerRouter = require('./routes/register');
 const authRouter = require('./routes/auth');
+const refreshTokenRouter = require('./routes/refreshToken');
 const employeesRouter = require('./routes/employees');
 
 const app = express();
@@ -20,9 +22,10 @@ app.use(logger);
 //Cross Origin Resource Sharing
 app.use(cors(corsOptions));
 
-//middleware
+//built in middleware
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
+app.use(cookieParser());
 
 //serve static files
 //in this example, every dir and file in 'public' directory will be public
@@ -36,6 +39,7 @@ app.use('/', rootRouter);
 //API Routes
 app.use('/api/v1/register', registerRouter);
 app.use('/api/v1/login', authRouter);
+app.use('/api/v1/refresh', refreshTokenRouter);
 
 app.use(verifyJWT);
 app.use('/api/v1/employees', employeesRouter);

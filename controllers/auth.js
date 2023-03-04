@@ -1,5 +1,7 @@
 const bcrypt = require('bcrypt');
 const path = require('path');
+const fsPromises = require('fs').promises;
+const jwt = require('jsonwebtoken');
 
 const usersDB = {
   users: require('../models/users.json'),
@@ -17,16 +19,15 @@ const handleLogin = async (req, res) => {
       .json({ message: 'User name and password must be provided!' });
   }
 
-  //find a user
-  const user = usersDB.users.find((u) => u.userName === userName);
-  console.log('user login', user);
-  if (!user) {
+  //find a user in db
+  const foundUser = usersDB.users.find((u) => u.userName === userName);
+  if (!foundUser) {
     return res
       .status(404)
       .json({ message: `Provided wrong email or password` });
   }
   //evaluate provided password
-  const isValidPassword = await bcrypt.compare(password, user.password);
+  const isValidPassword = await bcrypt.compare(password, foundUser.password);
 
   if (!isValidPassword) {
     return res
@@ -35,8 +36,39 @@ const handleLogin = async (req, res) => {
   }
 
   if (isValidPassword) {
-    //creating JWT token and sending it to client
-    res.json({ message: `${userName} is logged in` });
+    //creating JWT tokens and sending it to client
+    const accessToken = jwt.sign(
+      { userName: foundUser.userName, userId: foundUser.userId },
+      process.env.ACCESS_TOKEN_SECRET,
+      { expiresIn: '30s' }
+    );
+    const refreshToken = jwt.sign(
+      { userName: foundUser.userName, userId: foundUser.userId },
+      process.env.REFRESH_TOKEN_SECRET,
+      { expiresIn: '1d' }
+    );
+
+    //Saving Refresh Token in db (with current user)
+    const otherUsers = usersDB.users.filter(
+      (u) => u.userId !== foundUser.userId
+    );
+    const currentUser = { ...foundUser, refreshToken };
+    usersDB.setUsers([...otherUsers, currentUser]);
+
+    await fsPromises.writeFile(
+      path.join(__dirname, '..', 'models', 'users.json'),
+      JSON.stringify(usersDB.users)
+    );
+
+    //Sending tokens
+    res.cookie('jwt', refreshToken, {
+      httpOnly: true,
+      maxAge: 24 * 60 * 60 * 1000,
+      sameSite: 'None',
+      secure: true,
+    });
+
+    res.json({ message: `${userName} is logged in`, accessToken });
   }
 };
 

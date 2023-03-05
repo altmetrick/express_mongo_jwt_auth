@@ -23,12 +23,15 @@ const handleRefreshToken = (req, res) => {
     }
     //create new access token
     const payload = {
-      userName: decoded.userName,
-      userId: decoded.userId,
+      userInfo: {
+        userName: foundUser.userName,
+        roles: Object.values(foundUser.roles),
+      },
     };
     const newAccessToken = jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET, {
-      expiresIn: '30s',
+      expiresIn: '60s',
     });
+    //CHANGE expiresIn: ON PRODUCTION!!!
 
     res.json({ accessToken: newAccessToken });
   });

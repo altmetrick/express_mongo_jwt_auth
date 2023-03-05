@@ -36,12 +36,24 @@ const handleLogin = async (req, res) => {
   }
 
   if (isValidPassword) {
-    //creating JWT tokens and sending it to client
+    //we need to specify roles in tokens payload
+    //as aur roles is object 'role': numericValue in payload we can provide only arr values
+    const rolesValues = Object.values(foundUser.roles);
+
+    //creating JWT tokens and sending it to the client
     const accessToken = jwt.sign(
-      { userName: foundUser.userName, userId: foundUser.userId },
+      {
+        userInfo: {
+          userName: foundUser.userName,
+          userId: foundUser.userId,
+          roles: rolesValues,
+        },
+      },
       process.env.ACCESS_TOKEN_SECRET,
-      { expiresIn: '30s' }
+      { expiresIn: '60s' }
     );
+    //CHANGE expiresIn: ON PRODUCTION!!!
+
     const refreshToken = jwt.sign(
       { userName: foundUser.userName, userId: foundUser.userId },
       process.env.REFRESH_TOKEN_SECRET,

@@ -2,6 +2,8 @@ const fsPromises = require('fs').promises;
 const bcrypt = require('bcrypt');
 const path = require('path');
 
+const ROLES_LIST = require('../config/roles-list');
+
 const usersDB = {
   users: require('../models/users.json'),
   setUsers(data) {
@@ -29,8 +31,16 @@ const registerUser = async (req, res) => {
     //encrypt the password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    //store the new user
-    const newUser = { userName, password: hashedPassword };
+    //store the new user and add roles
+    const newUser = {
+      userName,
+      password: hashedPassword,
+      roles: {
+        user: ROLES_LIST['user'],
+        //editor: ROLES_LIST['editor'],
+        //admin: ROLES_LIST['admin'],
+      },
+    };
     usersDB.setUsers([...usersDB.users, newUser]);
 
     await fsPromises.writeFile(

@@ -48,6 +48,7 @@ app.use('/api/v1/logout', logOutRouter);
 app.use('/api/v1/refresh', refreshTokenRouter);
 
 app.use(verifyJWT);
+// app.use verify Roles
 app.use('/api/v1/employees', employeesRouter);
 
 //404 Not found

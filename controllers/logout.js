@@ -29,7 +29,7 @@ const handleLogOut = async (req, res) => {
   }
   //if there is a session (user) delete it in the db
   const otherUsers = usersDB.users.filter(
-    (u) => u.refreshToken === foundUser.refreshToken
+    (u) => u.refreshToken !== foundUser.refreshToken
   );
   const currentUser = { ...foundUser, refreshToken: '' };
   usersDB.setUsers([...otherUsers, currentUser]);

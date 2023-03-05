@@ -19,7 +19,7 @@ const handleLogin = async (req, res) => {
       .json({ message: 'User name and password must be provided!' });
   }
 
-  //find a user in db
+  //find the user in db
   const foundUser = usersDB.users.find((u) => u.userName === userName);
   if (!foundUser) {
     return res
@@ -50,7 +50,7 @@ const handleLogin = async (req, res) => {
 
     //Saving Refresh Token in db (with current user)
     const otherUsers = usersDB.users.filter(
-      (u) => u.userId !== foundUser.userId
+      (u) => u.userName !== foundUser.userName
     );
     const currentUser = { ...foundUser, refreshToken };
     usersDB.setUsers([...otherUsers, currentUser]);

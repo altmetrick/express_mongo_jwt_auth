@@ -5,8 +5,9 @@ const cors = require('cors');
 const cookieParser = require('cookie-parser');
 
 const { logger } = require('./middleware/logEvents');
-const verifyJWT = require('./middleware/verifyJWT');
+const credentials = require('./middleware/credentials');
 const corsOptions = require('./config/corsOptions');
+const verifyJWT = require('./middleware/verifyJWT');
 const errorHandler = require('./middleware/errorHandler');
 
 const rootRouter = require('./routes/root');
@@ -20,6 +21,9 @@ const app = express();
 
 //custom middleware
 app.use(logger);
+
+//handle options credentials check - before CORS
+app.use(credentials);
 //Cross Origin Resource Sharing
 app.use(cors(corsOptions));
 

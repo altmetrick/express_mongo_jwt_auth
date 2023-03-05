@@ -3,7 +3,9 @@ const express = require('express');
 const path = require('path');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
+const mongoose = require('mongoose');
 
+const connectDB = require('./config/connectDB');
 const { logger } = require('./middleware/logEvents');
 const credentials = require('./middleware/credentials');
 const corsOptions = require('./config/corsOptions');
@@ -69,6 +71,13 @@ app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
 
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}...`);
-});
+const start = async () => {
+  try {
+    await connectDB(process.env.DATABASE_URI);
+    app.listen(PORT, console.log(`Server running on port ${PORT}...`));
+  } catch (err) {
+    console.log(err);
+  }
+};
+
+start();

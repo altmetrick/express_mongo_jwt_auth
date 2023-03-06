@@ -1,74 +1,44 @@
-const data = {};
-data.employees = require('../models/employees.json');
+const Employee = require('../models/Employee');
 
-const getEmployees = (req, res) => {
-  res.json(data.employees);
-};
+const asyncWrapper = require('../middleware/async-wrapper');
 
-const createEmployee = (req, res) => {
-  const { firstName, lastName } = req.body;
-
-  if (!firstName || !lastName) {
-    return res
-      .status(400)
-      .json({ message: 'First and last names are required' });
-  }
-
-  const lastItemIndex = data.employees.length - 1;
-  const id = data.employees[lastItemIndex].id + 1 || 1;
-
-  const employee = { id, firstName, lastName };
-  data.employees.push(employee);
-
-  res.status(200).json(employee);
-};
-
-const getEmployee = (req, res) => {
-  const { id } = req.params;
-
-  const employee = data.employees.find((e) => e.id === Number(id));
-
-  if (!employee) {
-    return res
-      .status(400)
-      .json({ message: `Employee with id: ${id} not found` });
-  }
-
-  res.status(200).json(employee);
-};
-
-const updateEmployee = (req, res) => {
-  const { id } = req.params;
-  const { firstName, lastName } = req.body;
-
-  if (!firstName || !lastName) {
-    return res
-      .status(400)
-      .json({ message: 'First and last names are required' });
-  }
-
-  const employee = data.employees.find((e) => e.id === Number(id));
-
-  if (!employee) {
-    return res
-      .status(400)
-      .json({ message: `Employee with id: ${id} not found` });
-  }
-
-  data.employees = data.employees.map((e) => {
-    if (e.id === Number(id)) {
-      return { ...e, firstName, lastName };
+const getEmployees = async (req, res) => {
+  try {
+    const employees = await Employee.find({});
+    if (!employees) {
+      return res.status(204).json({ message: 'No employees found' });
     }
-    return e;
-  });
-
-  res.status(200).json({ firstName, lastName });
+    res.status(200).json(employees);
+  } catch (error) {
+    console.log(error);
+    res.json(error);
+  }
 };
 
-const deleteEmployee = (req, res) => {
+const createEmployee = async (req, res) => {
+  const { firstName, lastName } = req.body;
+
+  if (!firstName || !lastName) {
+    return res
+      .status(400)
+      .json({ message: 'First and last names are required' });
+  }
+
+  try {
+    //Creating and storing an employee
+    const employee = await Employee.create({ firstName, lastName });
+
+    res.status(200).json({ employee });
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ error: err.message });
+  }
+};
+
+const getEmployee = asyncWrapper(async (req, res) => {
   const { id } = req.params;
 
-  const employee = data.employees.find((e) => e.id === Number(id));
+  const employee = await Employee.findOne({ _id: id }).exec();
 
   if (!employee) {
     return res
@@ -76,9 +46,46 @@ const deleteEmployee = (req, res) => {
       .json({ message: `Employee with id: ${id} not found` });
   }
 
-  data.employees = data.employees.filter((e) => e.id !== Number(id));
+  res.status(200).json(employee);
+});
+
+const updateEmployee = asyncWrapper(async (req, res) => {
+  const { id } = req.params;
+  const { firstName, lastName } = req.body;
+
+  if (!firstName || !lastName) {
+    return res
+      .status(400)
+      .json({ message: 'First and last names are required' });
+  }
+
+  const employee = await Employee.findOneAndUpdate(
+    { _id: id },
+    { firstName, lastName }
+  );
+
+  if (!employee) {
+    return res
+      .status(400)
+      .json({ message: `Employee with id: ${id} not found` });
+  }
+
+  res.status(200).json({ employee, message: 'Employee updated' });
+});
+
+const deleteEmployee = asyncWrapper(async (req, res) => {
+  const { id } = req.params;
+
+  const employee = await Employee.findOneAndDelete({ _id: id }).exec();
+
+  if (!employee) {
+    return res
+      .status(400)
+      .json({ message: `Employee with id: ${id} not found` });
+  }
+
   res.status(200).json({ message: `Employee with id: ${id} was deleted` });
-};
+});
 
 module.exports = {
   getEmployees,

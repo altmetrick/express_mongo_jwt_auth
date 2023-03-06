@@ -23,7 +23,7 @@ const handleRefreshToken = async (req, res) => {
       },
     };
     const newAccessToken = jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET, {
-      expiresIn: '60s',
+      expiresIn: 60 * 5,
     });
     //CHANGE expiresIn: ON PRODUCTION!!!
 

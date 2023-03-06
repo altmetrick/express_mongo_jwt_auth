@@ -1,15 +1,7 @@
-const fsPromises = require('fs').promises;
 const bcrypt = require('bcrypt');
-const path = require('path');
 
+const User = require('../models/User');
 const ROLES_LIST = require('../config/roles-list');
-
-const usersDB = {
-  users: require('../models/users.json'),
-  setUsers(data) {
-    this.users = data;
-  },
-};
 
 const registerUser = async (req, res) => {
   const { userName, password } = req.body;
@@ -21,9 +13,10 @@ const registerUser = async (req, res) => {
   }
 
   //search for duplicate
-  const duplicate = usersDB.users.find((user) => user.userName === userName);
+  const duplicate = await User.findOne({ userName }).exec();
   if (duplicate) {
-    res
+    //409 - conflict
+    return res
       .status(409)
       .json({ message: `User with name ${userName} already exists` });
   }
@@ -31,24 +24,17 @@ const registerUser = async (req, res) => {
     //encrypt the password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    //store the new user and add roles
-    const newUser = {
+    //create and store a new user in the DB
+    const newUser = await User.create({
       userName,
       password: hashedPassword,
-      roles: {
-        user: ROLES_LIST['user'],
-        //editor: ROLES_LIST['editor'],
-        //admin: ROLES_LIST['admin'],
-      },
-    };
-    usersDB.setUsers([...usersDB.users, newUser]);
+      // roles: {
+      //   //user: ROLES_LIST['user'], - default value
+      //   //editor: ROLES_LIST['editor'],
+      //   //admin: ROLES_LIST['admin'],
+      // },
+    });
 
-    await fsPromises.writeFile(
-      path.join(__dirname, '..', 'models', 'users.json'),
-      JSON.stringify(usersDB.users)
-    );
-
-    console.log(usersDB.users);
     res.status(201).json({ user: newUser, message: 'User was registered.' });
   } catch (err) {
     res.status(500).json({ message: err.message });

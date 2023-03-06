@@ -4,6 +4,7 @@ const UserSchema = new mongoose.Schema({
   userName: {
     type: String,
     required: [true, 'User name must be provided'],
+    trim: true,
   },
   roles: {
     user: {

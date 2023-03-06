@@ -1,14 +1,7 @@
 const bcrypt = require('bcrypt');
-const path = require('path');
-const fsPromises = require('fs').promises;
 const jwt = require('jsonwebtoken');
 
-const usersDB = {
-  users: require('../models/users.json'),
-  setUsers(data) {
-    this.users = data;
-  },
-};
+const User = require('../models/User');
 
 const handleLogin = async (req, res) => {
   const { userName, password } = req.body;
@@ -20,7 +13,8 @@ const handleLogin = async (req, res) => {
   }
 
   //find the user in db
-  const foundUser = usersDB.users.find((u) => u.userName === userName);
+
+  const foundUser = await User.findOne({ userName }).exec();
   if (!foundUser) {
     return res
       .status(404)
@@ -61,16 +55,9 @@ const handleLogin = async (req, res) => {
     );
 
     //Saving Refresh Token in db (with current user)
-    const otherUsers = usersDB.users.filter(
-      (u) => u.userName !== foundUser.userName
-    );
-    const currentUser = { ...foundUser, refreshToken };
-    usersDB.setUsers([...otherUsers, currentUser]);
-
-    await fsPromises.writeFile(
-      path.join(__dirname, '..', 'models', 'users.json'),
-      JSON.stringify(usersDB.users)
-    );
+    foundUser.refreshToken = refreshToken;
+    const result = await foundUser.save();
+    console.log(result);
 
     //Sending tokens
     //as we use cookie parser, now we have ability to add cookie on res

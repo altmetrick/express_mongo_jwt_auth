@@ -1,7 +1,7 @@
 const { logEvents } = require('./logEvents');
 
 const errorHandler = (err, req, res, next) => {
-  logEvents(`${err.stack}\t${err.message}`, 'errorLog.txt');
+  // logEvents(`${err.stack}\t${err.message}`, 'errorLog.txt');
 
   console.error(err.stack);
 

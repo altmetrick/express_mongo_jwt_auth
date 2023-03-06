@@ -1,21 +1,15 @@
 const jwt = require('jsonwebtoken');
 
-const usersDB = {
-  users: require('../models/users.json'),
-  setUsers(data) {
-    this.users = data;
-  },
-};
+const User = require('../models/User');
 
-const handleRefreshToken = (req, res) => {
+const handleRefreshToken = async (req, res) => {
   const cookies = req.cookies;
   if (!cookies?.jwt) return res.sendStatus(401);
 
   const refreshToken = cookies.jwt;
   //search for user's session (or user with refresh token) in db by refreshToken
-  const foundUser = usersDB.users.find((u) => {
-    return u.refreshToken === refreshToken;
-  });
+  const foundUser = await User.findOne({ refreshToken }).exec();
+
   //verify refresh token
   jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, (err, decoded) => {
     if (err || decoded.userName !== foundUser.userName) {

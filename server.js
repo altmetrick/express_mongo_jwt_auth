@@ -18,6 +18,7 @@ const logOutRouter = require('./routes/logout');
 const authRouter = require('./routes/auth');
 const refreshTokenRouter = require('./routes/refreshToken');
 const employeesRouter = require('./routes/employees');
+const usersRouter = require('./routes/users');
 
 const app = express();
 
@@ -52,6 +53,7 @@ app.use('/api/v1/refresh', refreshTokenRouter);
 app.use(verifyJWT);
 // app.use verify Roles
 app.use('/api/v1/employees', employeesRouter);
+app.use('/api/v1/users', usersRouter);
 
 //404 Not found
 app.all('*', (req, res) => {

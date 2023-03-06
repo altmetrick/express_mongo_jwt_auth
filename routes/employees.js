@@ -4,23 +4,23 @@ const router = express.Router();
 const ROLES_LIST = require('../config/roles-list');
 const verifyRoles = require('../middleware/verifyRoles');
 
-const employeesControllers = require('../controllers/employees');
+const employeesController = require('../controllers/employees');
 
 router
   .route('/')
-  .get(employeesControllers.getEmployees)
+  .get(employeesController.getEmployees)
   .post(
     verifyRoles(ROLES_LIST.admin, ROLES_LIST.editor),
-    employeesControllers.createEmployee
+    employeesController.createEmployee
   );
 
 router
   .route('/:id')
-  .get(employeesControllers.getEmployee)
-  .put(
+  .get(employeesController.getEmployee)
+  .patch(
     verifyRoles(ROLES_LIST.admin, ROLES_LIST.editor),
-    employeesControllers.updateEmployee
+    employeesController.updateEmployee
   )
-  .delete(verifyRoles(ROLES_LIST.admin), employeesControllers.deleteEmployee);
+  .delete(verifyRoles(ROLES_LIST.admin), employeesController.deleteEmployee);
 
 module.exports = router;

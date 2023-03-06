@@ -6,7 +6,8 @@ const getEmployees = async (req, res) => {
   try {
     const employees = await Employee.find({});
     if (!employees) {
-      return res.status(204).json({ message: 'No employees found' });
+      //204 - no content
+      return res.status(204).json({ message: 'No employees found.' });
     }
     res.status(200).json(employees);
   } catch (error) {

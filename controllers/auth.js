@@ -4,6 +4,8 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 
 const handleLogin = async (req, res) => {
+  const cookies = req.cookies;
+
   const { userName, password } = req.body;
 
   if (!userName || !password) {
@@ -12,17 +14,16 @@ const handleLogin = async (req, res) => {
       .json({ message: 'User name and password must be provided!' });
   }
 
-  //find the user in db
-
+  //find current user in db
   const foundUser = await User.findOne({ userName }).exec();
   if (!foundUser) {
     return res
       .status(404)
       .json({ message: `Provided wrong email or password` });
   }
+
   //evaluate provided password
   const isValidPassword = await bcrypt.compare(password, foundUser.password);
-
   if (!isValidPassword) {
     return res
       .status(401)
@@ -48,14 +49,29 @@ const handleLogin = async (req, res) => {
     );
     //CHANGE expiresIn: ON PRODUCTION!!!
 
-    const refreshToken = jwt.sign(
+    //Creating new refresh token
+    const newRefreshToken = jwt.sign(
       { userName: foundUser.userName, userId: foundUser.userId },
       process.env.REFRESH_TOKEN_SECRET,
       { expiresIn: '1d' }
     );
 
-    //Saving Refresh Token in db (with current user)
-    foundUser.refreshToken = refreshToken;
+    //We need to check is there a refresh token (old token) in cookie
+    //if so we need to remove that refT from db and cookie
+    const newRefreshTokenArray = !cookies.jwt
+      ? foundUser.refreshToken
+      : foundUser.refreshToken.filter((refT) => refT !== cookies.jwt);
+
+    if (cookies?.jwt) {
+      res.clearCookie('jwt', refreshToken, {
+        httpOnly: true,
+        sameSite: 'None',
+        secure: false,
+      });
+    }
+
+    //Saving new Refresh Token in db (with current user)
+    foundUser.refreshToken = [...newRefreshTokenArray, newRefreshToken];
     const result = await foundUser.save();
     console.log(result);
 
@@ -63,7 +79,7 @@ const handleLogin = async (req, res) => {
     //as we use cookie parser, now we have ability to add cookie on res
     //set secure: false while development
     // secure : true - will be sent only on https, and local host is just http, so it won't work
-    res.cookie('jwt', refreshToken, {
+    res.cookie('jwt', newRefreshToken, {
       httpOnly: true,
       maxAge: 24 * 60 * 60 * 1000,
       sameSite: 'None',

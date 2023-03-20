@@ -63,7 +63,7 @@ const handleLogin = async (req, res) => {
       : foundUser.refreshToken.filter((refT) => refT !== cookies.jwt);
 
     if (cookies?.jwt) {
-      res.clearCookie('jwt', refreshToken, {
+      res.clearCookie('jwt', {
         httpOnly: true,
         sameSite: 'None',
         secure: false,
@@ -85,6 +85,7 @@ const handleLogin = async (req, res) => {
       sameSite: 'None',
       secure: false,
     });
+    //CHANGE ON PRODUCTION: secure: true;
 
     res.json({ message: `${userName} is logged in`, accessToken });
   }

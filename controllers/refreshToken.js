@@ -7,10 +7,9 @@ const handleRefreshToken = async (req, res) => {
   if (!cookies?.jwt) return res.sendStatus(401);
   //retrieving old refreshToken from users request
   const refreshToken = cookies.jwt;
-  //then deleting it in cookies, so client wont get it
-  res.clearCookie('jwt', refreshToken, {
+  //then deleting it from cookies, so client wont get it
+  res.clearCookie('jwt', {
     httpOnly: true,
-    maxAge: 24 * 60 * 60 * 1000,
     sameSite: 'None',
     secure: false,
   });

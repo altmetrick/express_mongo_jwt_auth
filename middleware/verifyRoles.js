@@ -10,7 +10,7 @@ const verifyRoles = (...allowedRoles) => {
     //allowedRoles = [5150 , 1984] // verifyRoles(ROLES_LIST.admin, ROLES_LIST.editor)
     //res.user.roles = [2001] // user role
 
-    //check if user has a roles that provided for a route
+    //check if user has roles that provided for a route
     const userRoles = req.user.roles;
     const result = userRoles
       .map((role) => allowedRoles.includes(role))
